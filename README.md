@@ -16,7 +16,7 @@ A arquitetura do projeto é dividida em três camadas principais:
 
 1.  **Hardware (ESP32):**
     * Um microcontrolador **ESP32** com conectividade Wi-Fi.
-    * Displays **OLED de 0.91 polegadas (128x32)** conectados via interface I2C.
+    * Displays **OLED de 0.91 polegadas (128x32)** e **OLED de 0.96 polegadas (128x64)** conectados via interface I2C.
     * Botões físicos para coletar feedback do cliente (`Sim` e `Não`).
     * O ESP32 se conecta à API em Flask para buscar as informações dos produtos e para enviar os dados de feedback coletados.
 
@@ -50,15 +50,21 @@ Durante o desenvolvimento, alguns desafios foram superados, que servem como apre
 
 * **Conexão do ESP32 com a API:** Foi necessário configurar o endereço IP da rede local no código do ESP32 (`const char* api_endpoint = "http://192.168.0.11:5000/api/produtos";`), já que a comunicação deve ser feita para o servidor local rodando no computador.
 
-Tempo de execução do projeto:
+## Tempo de execução do projeto:
 
-Dia 1: Conectar o hardware e programou o ESP32.
+Dia 1: Conectar o hardware e programar o ESP32.
 
 Dia 2: Planejar a arquitetura de software, incluindo o banco de dados, instalar o PostgreSQL, criar o banco de dados e as tabelas.
 
-Dia 3: Debugou e fezer a API em Flask se conectar com o banco de dados.
+Dia 3: Debug e fezer a API em Flask se conectar com o banco de dados, conectar o ESP32 à API, fezer os botões funcionarem e criar a interface web completa.
 
-Dia 4: Conectar o ESP32 à API, fezer os botões funcionarem e criar a interface web completa.
+
+
+## Custo do projeto
+
+Custo total do projeto: R$ 200,00
+
+Para testes foram comprados 5 displays 128x32 e 5 display 128x64
 
 
 
