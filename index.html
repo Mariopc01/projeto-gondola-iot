@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Gôndolas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+        }
+        label, input, select, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        input, select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.delete {
+            background-color: #d9534f;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciador de Gôndolas</h1>
+
+        <form id="add-product-form">
+            <h2>Adicionar Novo Produto</h2>
+            <label for="add-nome">Nome:</label>
+            <input type="text" id="add-nome" required>
+            <label for="add-preco">Preço:</label>
+            <input type="number" id="add-preco" step="0.01" required>
+            <label for="add-display-id">ID do Display:</label>
+            <input type="number" id="add-display-id" required>
+            <button type="submit">Adicionar Produto</button>
+        </form>
+
+        <form id="update-product-form">
+            <h2>Atualizar Produto Existente</h2>
+            <label for="update-id">ID do Produto:</label>
+            <input type="number" id="update-id" required>
+            <label for="update-nome">Novo Nome (opcional):</label>
+            <input type="text" id="update-nome">
+            <label for="update-preco">Novo Preço (opcional):</label>
+            <input type="number" id="update-preco" step="0.01">
+            <label for="update-display-id">Novo ID do Display (opcional):</label>
+            <input type="number" id="update-display-id">
+            <button type="submit">Atualizar Produto</button>
+        </form>
+
+        <h2>Lista de Produtos</h2>
+        <table id="products-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>ID do Display</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        ---
+
+        <h2>Histórico de Feedback dos Clientes</h2>
+        <table id="feedback-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Feedback</th>
+                    <th>Data/Hora</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const API_PRODUCTS_URL = 'http://127.0.0.1:5000/api/produtos';
+            const API_FEEDBACK_URL = 'http://127.0.0.1:5000/api/feedback';
+            const productsTableBody = document.querySelector('#products-table tbody');
+            const feedbackTableBody = document.querySelector('#feedback-table tbody');
+            const addForm = document.getElementById('add-product-form');
+            const updateForm = document.getElementById('update-product-form');
+
+            // Funcao para carregar a lista de produtos
+            async function fetchProducts() {
+                try {
+                    const response = await fetch(API_PRODUCTS_URL);
+                    const products = await response.json();
+                    
+                    productsTableBody.innerHTML = ''; // Limpa a tabela
+                    products.forEach(product => {
+                        const row = productsTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${product.id}</td>
+                            <td>${product.nome}</td>
+                            <td>R$ ${parseFloat(product.preco).toFixed(2).replace('.', ',')}</td>
+                            <td>${product.display_id}</td>
+                            <td>
+                                <button class="delete" data-id="${product.id}">Excluir</button>
+                            </td>
+                        `;
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar produtos:', error);
+                }
+            }
+
+            // Funcao para carregar a lista de feedback
+            async function fetchFeedback() {
+                try {
+                    const response = await fetch(API_FEEDBACK_URL);
+                    const feedbackData = await response.json();
+                    
+                    feedbackTableBody.innerHTML = ''; // Limpa a tabela
+                    feedbackData.forEach(data => {
+                        const row = feedbackTableBody.insertRow();
+                        row.innerHTML = `
+                            <td>${data.produto}</td>
+                            <td>${data.feedback}</td>
+                            <td>${data.momento}</td>
+                        `;
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar feedback:', error);
+                }
+            }
+
+            // Funcao para adicionar um novo produto
+            addForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nome = document.getElementById('add-nome').value;
+                const preco = parseFloat(document.getElementById('add-preco').value);
+                const displayId = parseInt(document.getElementById('add-display-id').value);
+
+                await fetch(API_PRODUCTS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: nome, preco: preco, display_id: displayId })
+                });
+
+                addForm.reset();
+                fetchProducts();
+            });
+
+            // Funcao para atualizar um produto
+            updateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('update-id').value;
+                const nome = document.getElementById('update-nome').value;
+                const preco = document.getElementById('update-preco').value;
+                const displayId = document.getElementById('update-display-id').value;
+                
+                const data = {};
+                if (nome) data.nome = nome;
+                if (preco) data.preco = parseFloat(preco);
+                if (displayId) data.display_id = parseInt(displayId);
+
+                await fetch(`${API_PRODUCTS_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                updateForm.reset();
+                fetchProducts();
+            });
+
+            // Funcao para deletar um produto
+            productsTableBody.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('delete')) {
+                    const productId = e.target.getAttribute('data-id');
+                    if (confirm('Tem certeza que deseja excluir este produto?')) {
+                        await fetch(`${API_PRODUCTS_URL}/${productId}`, {
+                            method: 'DELETE'
+                        });
+                        fetchProducts();
+                    }
+                }
+            });
+
+            // Carrega os dados quando a pagina e carregada
+            fetchProducts();
+            fetchFeedback();
+        });
+    </script>
+</body>
+</html>
